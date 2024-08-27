@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"log"
+	"incubation/model"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -22,19 +22,15 @@ func LogMiddleware() gin.HandlerFunc {
 			5. UserAgent() => [Postman, Chrome, Mozzila, Safari ...]
 			6. Path [/users, /products, ....]
 		*/
-		latency := time.Since(t)
-		clientIP := ctx.ClientIP() // 192.168.1.1
-		method := ctx.Request.Method
-		statusCode := ctx.Writer.Status()
-		userAgent := ctx.Request.UserAgent()
-		path := ctx.Request.URL.Path
-		log.Printf("[LOG] %s - [%v] \"%s %s %d %v \"%s\"\n",
-			clientIP,
-			t,
-			method,
-			path,
-			statusCode,
-			latency,
-			userAgent)
+
+		model.SendLogRequest(model.LogModel{
+			AccessTime: t,
+			Latency:    time.Since(t),
+			ClientIP:   ctx.ClientIP(), // 192.168.1.1
+			Method:     ctx.Request.Method,
+			Code:       ctx.Writer.Status(),
+			Path:       ctx.Request.URL.Path,
+			UserAgent:  ctx.Request.UserAgent(),
+		})
 	}
 }
