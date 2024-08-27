@@ -12,17 +12,29 @@ func main() {
 	engine := gin.New()
 
 	// engine.Use(middleware.SimpleMiddleware())
+	// Menggunakan middleware secara global route
 	engine.Use(middleware.LogMiddleware())
 
-	engine.GET("/ping", handler.PingHandler)
+	// Selanjutnya kita bisa langsung menggunakan fiturnya :
+	// 1. Menggunakan method => GET, POST, PUT, DELETE
 
-	engine.GET("/pong", handler.PongHandler)
-	engine.GET("/greetings", handler.GreetingsHandler) // karena opsional, jadi ditaro diatas yang required. kalo
+	// Menerima sebuah parameter [1] REST URL, [Handler]
+	// http://enigmacamp.com:8888/users
+	// RelativePath => Noun (Kata benda) (Plural)
+
+	// GET
+	// Menggunakan middleware secara group route
+	v1 := engine.Group("/api/v1", middleware.BasicAuthMiddleware())
+	v1.GET("/ping", handler.PingHandler)
+	v1.GET("/pong", handler.PongHandler)
+	v1.GET("/greetings", handler.GreetingsHandler) // karena opsional, jadi ditaro diatas yang required. kalo
 	// engine.GET("/greetings/:name", handler.GreetingByNameHandler)
-	engine.GET("/greetings/:params", handler.GreetingByOtherHandler)
+	v1.GET("/greetings/:params", handler.GreetingByOtherHandler)
 
-	engine.POST("/user", handler.CreateUCHandler)
-	engine.POST("/user/register", handler.CreateUserCredentialWithPhotoHandler)
+	//POST
+	v1_Post := engine.Group("/api/v1", middleware.LogMiddleware())
+	v1_Post.POST("/user", handler.CreateUCHandler)
+	v1_Post.POST("/user/register", handler.CreateUserCredentialWithPhotoHandler)
 
 	engine.Run()
 }
