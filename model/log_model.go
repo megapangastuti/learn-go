@@ -1,7 +1,7 @@
 package model
 
 import (
-	"log"
+	"fmt"
 	"time"
 )
 
@@ -25,7 +25,7 @@ type LogModel struct {
 // statusCode,
 // latency,
 // userAgent
-func SendLogRequest(request LogModel) {
+func SendLogRequest(request LogModel) string {
 	switch {
 	case request.Code >= 500:
 		request.Level = "error"
@@ -35,7 +35,7 @@ func SendLogRequest(request LogModel) {
 		request.Level = "info"
 	}
 
-	log.Printf("[LOG] %s - [%v] level = %s \"%s %s %d %v \"%s\"\n",
+	return fmt.Sprintf("[LOG] %s - [%v] level = %s \"%s %s %d %v \"%s\"\n",
 		request.ClientIP,
 		request.AccessTime,
 		request.Level,

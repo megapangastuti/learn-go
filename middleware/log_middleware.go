@@ -2,6 +2,8 @@ package middleware
 
 import (
 	"incubation/model"
+	"log"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -9,6 +11,22 @@ import (
 
 func LogMiddleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+
+		// os Package OpenFile, fungsinya untuk membuka akses ke file tsb
+		// logger.log (file yang akan diberikan akses)
+		// APPEND => akan menambahkan data di akhir (append slice)
+		// CREATE => akan membuat file logger.log jika tidak ada
+		// WRONLY =? akan memberikan akses menulis ke file (isi ke file)
+		// ModePerm => Permission atau bisa ganti dengan 0644
+		file, err := os.OpenFile("logger.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, os.ModePerm)
+
+		if err != nil {
+			log.Fatal("err:", err.Error())
+		}
+
+		defer file.Close()
+		log.SetOutput(file)
+
 		t := time.Now()
 
 		ctx.Next()
@@ -23,7 +41,7 @@ func LogMiddleware() gin.HandlerFunc {
 			6. Path [/users, /products, ....]
 		*/
 
-		model.SendLogRequest(model.LogModel{
+		logString := model.SendLogRequest(model.LogModel{
 			AccessTime: t,
 			Latency:    time.Since(t),
 			ClientIP:   ctx.ClientIP(), // 192.168.1.1
@@ -32,5 +50,11 @@ func LogMiddleware() gin.HandlerFunc {
 			Path:       ctx.Request.URL.Path,
 			UserAgent:  ctx.Request.UserAgent(),
 		})
+
+		// untuk menulis ke file yang sudah dibuka dan diberi akses
+		_, err = file.WriteString(logString)
+		if err != nil {
+			log.Fatal("faile to write", err.Error())
+		}
 	}
 }
